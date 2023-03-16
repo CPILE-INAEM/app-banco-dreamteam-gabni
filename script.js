@@ -117,12 +117,13 @@ const updateUI = (currentAccount) => {
   calcAndDisplaySummary(currentAccount);
 };
 
-const displayMovements = (movements) => {
+const displayMovements = (movements, sort = false) => {
   //limpiar movimientos antiguos
   document.querySelector(".movements").innerHTML = "";
 
   //insertarlos con insertAdjacentHTML
   //comprobar si son positivos o negativos para la inserccion
+  const movs = sort ? [...movements].sort((a, b) => a - b) : movements;
   movements.forEach((mov, i) => {
     const typeMov = mov > 0 ? "deposit" : "withdrawal";
     const movHTML = `<div class="movements__row">
