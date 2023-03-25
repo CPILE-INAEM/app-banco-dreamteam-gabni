@@ -202,7 +202,7 @@ const calcAndDisplaySummary = (currentAccount) => {
     .map(({value}) => (value * currentAccount.interestRate) / 100)
     .filter((int) => int >= 2)
     .map((int) => {
-      console.log(int);
+      //console.log(int);
       return int;
     })
     .reduce((acc, int) => acc + int, 0);
@@ -214,7 +214,6 @@ const calcAndDisplaySummary = (currentAccount) => {
 btnTransfer.addEventListener("click", function (e) {
   //Prevent form from submitting
   e.preventDefault();
-  console.log("hola mundo")
   const amount = Number(inputTransferAmount.value);
   const receiverUsername = accounts.find(
     (acc) => acc.username === inputTransferTo.value
