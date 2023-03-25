@@ -7,28 +7,61 @@
 // Data
 const account1 = {
   owner: "Juan Sánchez",
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  movements: [
+    { date: "2022-01-02", value: 200 },
+    { date: "2023-02-20", value: 450 },
+    { date: "2021-07-18", value: -400 },
+    { date: "2021-03-1", value: 3000 },
+    { date: "2019-03-25", value: -650 },
+    { date: "2019-10-16", value: -130 },
+    { date: "2021-12-01", value: 70 },
+    { date: "2022-06-25", value: 1300 },
+  ],
   interestRate: 1.2, // %
   pin: 1111,
 };
 
 const account2 = {
   owner: "María Portazgo",
-  movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
+  movements: [
+    { date: "2022-11-22", value: 5000 },
+    { date: "2023-01-02", value: 3400 },
+    { date: "2021-05-13", value: -150 },
+    { date: "2022-03-05", value: -790 },
+    { date: "2019-04-30", value: -3210 },
+    { date: "2019-01-17", value: -1000 },
+    { date: "2021-12-01", value: 8500 },
+    { date: "2021-06-25", value: -30 },
+    ],
   interestRate: 1.5,
   pin: 2222,
 };
 
 const account3 = {
   owner: "Estefanía Pueyo",
-  movements: [200, -200, 340, -300, -20, 50, 400, -460],
+  movements: [
+    { date: "2023-01-15", value: 200 },
+    { date: "2023-03-24", value: -200 },
+    { date: "2021-01-08", value: 340 },
+    { date: "2017-03-1", value: -300 },
+    { date: "2019-05-20", value: -20 },
+    { date: "2019-01-04", value: 50 },
+    { date: "2021-10-10", value: 400 },
+    { date: "2022-08-25", value: -460 },
+    ],
   interestRate: 0.7,
   pin: 3333,
 };
 
 const account4 = {
   owner: "Javier Rodríguez",
-  movements: [430, 1000, 700, 50, 90],
+  movements: [
+    { date: "2022-12-02", value: 430 },
+    { date: "2023-01-01", value: 1000 },
+    { date: "2021-09-20", value: 700 },
+    { date: "2021-02-13", value: 50 },
+    { date: "2019-06-02", value: 90 },
+  ],
   interestRate: 1,
   pin: 4444,
 };
@@ -61,6 +94,8 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
+let currentAccount;
+let balance;
 //init data
 const createUsername = function () {
   accounts.forEach((account) => {
@@ -84,7 +119,7 @@ btnLogin.addEventListener("click", (e) => {
 
   //recorrer todos los accounts y buscar el que coincida con el username
   //y luego comparar el pin
-  const currentAccount = accounts.find(
+  currentAccount = accounts.find(
     (account) => account.username === username
   );
 
@@ -110,45 +145,51 @@ btnLogin.addEventListener("click", (e) => {
 const updateUI = (currentAccount) => {
   const { movements } = currentAccount;
   //mostrar movimientos
-  displayMovements(movements);
+  displayMovements(currentAccount);
   //mostrar balance
   calcAndDisplayBalance(currentAccount.movements);
   //mostrar resumen
   calcAndDisplaySummary(currentAccount);
 };
 
-const displayMovements = (movements, sort = false) => {
+const displayMovements = (currentAccount, sort = false) => {
   //limpiar movimientos antiguos
   document.querySelector(".movements").innerHTML = "";
 
   //insertarlos con insertAdjacentHTML
+
+  //Ordenar los movimientos por fecha
+  
+  const movements = sort ? [...currentAccount.movements].sort((a, b) => b.date - a.date) : currentAccount.movements;
   //comprobar si son positivos o negativos para la inserccion
-  const movs = sort ? [...movements].sort((a, b) => a - b) : movements;
+  
   movements.forEach((mov, i) => {
-    const typeMov = mov > 0 ? "deposit" : "withdrawal";
+    const {value} = mov;
+    const {date} = mov;
+    const typeMov = value > 0 ? "deposit" : "withdrawal";
     const movHTML = `<div class="movements__row">
       <div class="movements__type movements__type--${typeMov}">${
       i + 1
     } ${typeMov}</div>
-      <div class="movements__date">3 days ago</div>
-      <div class="movements__value">${mov.toFixed(2)}€</div>
+      <div class="movements__date">${date}</div>
+      <div class="movements__value">${value.toFixed(2)}€</div>
     </div>`;
     containerMovements.insertAdjacentHTML("afterbegin", movHTML);
   });
 };
 const calcAndDisplayBalance = (movements) => {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+  balance = movements.reduce((acc, movement) => acc + movement.value, 0);
   labelBalance.textContent = `${balance.toFixed(2)}€`;
 };
 
 const calcAndDisplaySummary = (currentAccount) => {
   const { movements } = currentAccount;
   const sumIn = movements
-    .filter((movement) => movement > 0)
-    .reduce((acc, movement) => acc + movement, 0);
+    .filter(({value}) => value > 0)
+    .reduce((acc, movement) => acc + movement.value, 0);
   const sumOut = movements
-    .filter((movement) => movement < 0)
-    .reduce((acc, movement) => acc - movement, 0);
+    .filter(({value}) => value < 0)
+    .reduce((acc, {value}) => acc - value, 0);
 
   labelSumIn.textContent = `${sumIn.toFixed(2)}€`;
   labelSumOut.textContent = `${Math.abs(sumOut).toFixed(2)}€`;
@@ -157,8 +198,8 @@ const calcAndDisplaySummary = (currentAccount) => {
   //teniendo en cuenta solo ingresos superiores a 100€
   //y que los intereses sean superiores a 2€
   const interest = movements
-    .filter((mov) => mov > 100)
-    .map((mov) => (mov * currentAccount.interestRate) / 100)
+    .filter(({value}) => value > 100)
+    .map(({value}) => (value * currentAccount.interestRate) / 100)
     .filter((int) => int >= 2)
     .map((int) => {
       console.log(int);
@@ -167,3 +208,67 @@ const calcAndDisplaySummary = (currentAccount) => {
     .reduce((acc, int) => acc + int, 0);
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
+
+//Implementar transferencias entre cuentas
+
+btnTransfer.addEventListener("click", function (e) {
+  //Prevent form from submitting
+  e.preventDefault();
+  console.log("hola mundo")
+  const amount = Number(inputTransferAmount.value);
+  const receiverUsername = accounts.find(
+    (acc) => acc.username === inputTransferTo.value
+  );
+    console.log(receiverUsername);
+  const senderUsername = currentAccount;
+  // transferencia mas de 0€, existe el usuario de destio, el usuario de destino no es el mismo que envia, la cuenta que envia tiene suficiente dinero
+  if (
+    amount > 0 &&
+    receiverUsername &&
+    senderUsername !== receiverUsername &&
+    balance >= amount
+    
+  ) {
+
+    console.log("cumple las condiciones")
+    const receiverAccount = receiverUsername;
+  
+    senderUsername.movements.push({
+      date: new Date().toISOString().split("T")[0],
+      value: -amount,
+    });
+    receiverUsername.movements.push({
+      date: new Date().toISOString().split("T")[0],
+      value: amount,
+    });
+
+    updateUI(currentAccount);
+   
+    console.log("Transferencia realizada");
+    
+  }
+  inputTransferAmount.value = inputTransferTo.value = "";
+});
+
+//Prestamos 
+btnLoan.addEventListener("click", function (e) {
+  e.preventDefault();
+  console.log("hola mundo")
+  const amount = Number(inputLoanAmount.value);
+  console.log("previo");
+  console.log(amount);
+  console.log(balance)
+  if (amount > 0)
+   {
+    console.log(currentAccount.movements)
+    currentAccount.movements.push({
+      date: new Date().toISOString().split("T")[0],
+      value: amount,
+    });
+    balance += amount;
+    updateUI(currentAccount);
+    
+  }
+
+  inputLoanAmount.value = "";
+});
