@@ -32,7 +32,7 @@ const account2 = {
     { date: "2019-01-17", value: -1000 },
     { date: "2021-12-01", value: 8500 },
     { date: "2021-06-25", value: -30 },
-    ],
+  ],
   interestRate: 1.5,
   pin: 2222,
 };
@@ -48,7 +48,7 @@ const account3 = {
     { date: "2019-01-04", value: 50 },
     { date: "2021-10-10", value: 400 },
     { date: "2022-08-25", value: -460 },
-    ],
+  ],
   interestRate: 0.7,
   pin: 3333,
 };
@@ -96,6 +96,11 @@ const inputClosePin = document.querySelector(".form__input--pin");
 
 let currentAccount;
 let balance;
+
+//Para tener la fecha actual
+const currentDate = new Date();
+labelDate.textContent = currentDate.toLocaleDateString();
+
 //init data
 const createUsername = function () {
   accounts.forEach((account) => {
@@ -119,9 +124,7 @@ btnLogin.addEventListener("click", (e) => {
 
   //recorrer todos los accounts y buscar el que coincida con el username
   //y luego comparar el pin
-  currentAccount = accounts.find(
-    (account) => account.username === username
-  );
+  currentAccount = accounts.find((account) => account.username === username);
 
   //puede ser null si el usuario no existe!!!
 
@@ -145,27 +148,25 @@ btnLogin.addEventListener("click", (e) => {
 const updateUI = (currentAccount) => {
   const { movements } = currentAccount;
   //mostrar movimientos
-  displayMovements(currentAccount);
+  displayMovements(currentAccount.movements);
   //mostrar balance
   calcAndDisplayBalance(currentAccount.movements);
   //mostrar resumen
   calcAndDisplaySummary(currentAccount);
 };
 
-const displayMovements = (currentAccount, sort = false) => {
-  //limpiar movimientos antiguos
-  document.querySelector(".movements").innerHTML = "";
+let sort;
 
-  //insertarlos con insertAdjacentHTML
+const displayMovements = function (movements, sort = false) {
+  containerMovements.innerHTML = "";
 
-  //Ordenar los movimientos por fecha
-  
-  const movements = sort ? [...currentAccount.movements].sort((a, b) => b.date - a.date) : currentAccount.movements;
-  //comprobar si son positivos o negativos para la inserccion
-  
+  // Ordenar los movimientos por fecha si el parámetro sort es true
+  if (sort) movements.sort((a, b) => new Date(b.date) - new Date(a.date));
+  else movements.sort((a, b) => new Date(a.date) - new Date(b.date));
+
   movements.forEach((mov, i) => {
-    const {value} = mov;
-    const {date} = mov;
+    const { value } = mov;
+    const { date } = mov;
     const typeMov = value > 0 ? "deposit" : "withdrawal";
     const movHTML = `<div class="movements__row">
       <div class="movements__type movements__type--${typeMov}">${
@@ -177,6 +178,7 @@ const displayMovements = (currentAccount, sort = false) => {
     containerMovements.insertAdjacentHTML("afterbegin", movHTML);
   });
 };
+
 const calcAndDisplayBalance = (movements) => {
   balance = movements.reduce((acc, movement) => acc + movement.value, 0);
   labelBalance.textContent = `${balance.toFixed(2)}€`;
@@ -185,11 +187,11 @@ const calcAndDisplayBalance = (movements) => {
 const calcAndDisplaySummary = (currentAccount) => {
   const { movements } = currentAccount;
   const sumIn = movements
-    .filter(({value}) => value > 0)
+    .filter(({ value }) => value > 0)
     .reduce((acc, movement) => acc + movement.value, 0);
   const sumOut = movements
-    .filter(({value}) => value < 0)
-    .reduce((acc, {value}) => acc - value, 0);
+    .filter(({ value }) => value < 0)
+    .reduce((acc, { value }) => acc - value, 0);
 
   labelSumIn.textContent = `${sumIn.toFixed(2)}€`;
   labelSumOut.textContent = `${Math.abs(sumOut).toFixed(2)}€`;
@@ -198,8 +200,8 @@ const calcAndDisplaySummary = (currentAccount) => {
   //teniendo en cuenta solo ingresos superiores a 100€
   //y que los intereses sean superiores a 2€
   const interest = movements
-    .filter(({value}) => value > 100)
-    .map(({value}) => (value * currentAccount.interestRate) / 100)
+    .filter(({ value }) => value > 100)
+    .map(({ value }) => (value * currentAccount.interestRate) / 100)
     .filter((int) => int >= 2)
     .map((int) => {
       //console.log(int);
@@ -218,7 +220,7 @@ btnTransfer.addEventListener("click", function (e) {
   const receiverUsername = accounts.find(
     (acc) => acc.username === inputTransferTo.value
   );
-    console.log(receiverUsername);
+  console.log(receiverUsername);
   const senderUsername = currentAccount;
   // transferencia mas de 0€, existe el usuario de destio, el usuario de destino no es el mismo que envia, la cuenta que envia tiene suficiente dinero
   if (
@@ -226,12 +228,10 @@ btnTransfer.addEventListener("click", function (e) {
     receiverUsername &&
     senderUsername !== receiverUsername &&
     balance >= amount
-    
   ) {
-
-    console.log("cumple las condiciones")
+    console.log("cumple las condiciones");
     const receiverAccount = receiverUsername;
-  
+
     senderUsername.movements.push({
       date: new Date().toISOString().split("T")[0],
       value: -amount,
@@ -242,32 +242,44 @@ btnTransfer.addEventListener("click", function (e) {
     });
 
     updateUI(currentAccount);
-   
+
     console.log("Transferencia realizada");
-    
   }
   inputTransferAmount.value = inputTransferTo.value = "";
 });
 
-//Prestamos 
+//Prestamos
 btnLoan.addEventListener("click", function (e) {
   e.preventDefault();
-  console.log("hola mundo")
+  console.log("hola mundo");
   const amount = Number(inputLoanAmount.value);
   console.log("previo");
   console.log(amount);
-  console.log(balance)
-  if (amount > 0)
-   {
-    console.log(currentAccount.movements)
+  console.log(balance);
+  if (amount > 0) {
+    console.log(currentAccount.movements);
     currentAccount.movements.push({
       date: new Date().toISOString().split("T")[0],
       value: amount,
     });
     balance += amount;
     updateUI(currentAccount);
-    
   }
 
   inputLoanAmount.value = "";
+});
+
+btnSort.addEventListener("click", function (e) {
+  e.preventDefault();
+  const movements = sort
+    ? [...currentAccount.movements].sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      )
+    : currentAccount.movements;
+});
+
+btnSort.addEventListener("click", (e) => {
+  e.preventDefault();
+  displayMovements(currentAccount.movements, !sort);
+  sort = !sort;
 });
