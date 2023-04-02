@@ -283,3 +283,32 @@ btnSort.addEventListener("click", (e) => {
   displayMovements(currentAccount.movements, !sort);
   sort = !sort;
 });
+
+// Cerrar cuenta
+function closeAccount() {
+  const user = document.querySelector(".form--close .form__input--user").value;
+  const pin = document.querySelector(".form--close .form__input--pin").value;
+
+  if (
+    accounts.find((acc) => acc.username === user && acc.pin === Number(pin))
+  ) {
+    if (confirm("¿Estás seguro de que deseas eliminar tu cuenta?")) {
+      const index = accounts.findIndex(
+        (acc) => acc.username === user && acc.pin === Number(pin)
+      );
+      const accountToDelete = accounts[index];
+      console.log(accountToDelete); // verificar que se obtiene la cuenta correcta
+      accounts.splice(index, 1);
+      updateUI(currentAccount);
+      document.querySelector(".logout-timer").style.display = "none";
+      document.querySelector(".app").style.opacity = 0;
+    }
+  }
+  document.querySelector(".form--close").reset();
+}
+
+const closeBtn = document.querySelector(".operation--close .form__btn--close");
+closeBtn.addEventListener("click", function (e) {
+  e.preventDefault();
+  closeAccount();
+});
