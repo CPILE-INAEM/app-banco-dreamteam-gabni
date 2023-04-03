@@ -284,7 +284,7 @@ btnSort.addEventListener("click", (e) => {
   sort = !sort;
 });
 
-// Cerrar cuenta
+// Cerrar cuenta.
 function closeAccount() {
   const user = document.querySelector(".form--close .form__input--user").value;
   const pin = document.querySelector(".form--close .form__input--pin").value;
