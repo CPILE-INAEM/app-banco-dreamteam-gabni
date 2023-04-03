@@ -109,6 +109,7 @@ const createUsername = function () {
       .map((name) => name[0])
       .join("")
       .toLowerCase();
+
   });
 };
 
@@ -164,15 +165,22 @@ const displayMovements = function (movements, sort = false) {
   if (sort) movements.sort((a, b) => new Date(b.date) - new Date(a.date));
   else movements.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  movements.forEach((mov, i) => {
+  currentAccount.movements.forEach((mov, i) => {
+     // Convertir las fechas de los movimientos a objetos moment
+     currentAccount.movements.forEach((movement) => {
+      movement.date = moment(movement.date, "YYYY-MM-DD, h:mm:ss a");
+
+      // Utilizar el método fromNow para mostrar la fecha en formato relativo
+      movement.dateStr = movement.date.fromNow();
+    });
     const { value } = mov;
-    const { date } = mov;
+    const dateStr = mov.dateStr;
     const typeMov = value > 0 ? "deposit" : "withdrawal";
     const movHTML = `<div class="movements__row">
       <div class="movements__type movements__type--${typeMov}">${
       i + 1
     } ${typeMov}</div>
-      <div class="movements__date">${date}</div>
+      <div class="movements__date">${dateStr}</div>
       <div class="movements__value">${value.toFixed(2)}€</div>
     </div>`;
     containerMovements.insertAdjacentHTML("afterbegin", movHTML);
@@ -231,13 +239,17 @@ btnTransfer.addEventListener("click", function (e) {
   ) {
     console.log("cumple las condiciones");
     const receiverAccount = receiverUsername;
-
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const second = now.getSeconds();
     senderUsername.movements.push({
-      date: new Date().toISOString().split("T")[0],
+      //date: new Date().toISOString().split("T")[0],
+      date : now.toISOString().slice(0, 10) + ' ' + hour + ':' + minute + ':' + second,
       value: -amount,
     });
     receiverUsername.movements.push({
-      date: new Date().toISOString().split("T")[0],
+      date:  now.toISOString().slice(0, 10) + ' ' + hour + ':' + minute + ':' + second,
       value: amount,
     });
 
@@ -256,10 +268,14 @@ btnLoan.addEventListener("click", function (e) {
   console.log("previo");
   console.log(amount);
   console.log(balance);
+  const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const second = now.getSeconds();
   if (amount > 0) {
     console.log(currentAccount.movements);
     currentAccount.movements.push({
-      date: new Date().toISOString().split("T")[0],
+      date:  now.toISOString().slice(0, 10) + ' ' + hour + ':' + minute + ':' + second,
       value: amount,
     });
     balance += amount;
