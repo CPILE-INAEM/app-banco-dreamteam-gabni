@@ -109,7 +109,6 @@ const createUsername = function () {
       .map((name) => name[0])
       .join("")
       .toLowerCase();
-
   });
 };
 
@@ -166,8 +165,8 @@ const displayMovements = function (movements, sort = false) {
   else movements.sort((a, b) => new Date(a.date) - new Date(b.date));
 
   currentAccount.movements.forEach((mov, i) => {
-     // Convertir las fechas de los movimientos a objetos moment
-     currentAccount.movements.forEach((movement) => {
+    // Convertir las fechas de los movimientos a objetos moment
+    currentAccount.movements.forEach((movement) => {
       movement.date = moment(movement.date, "YYYY-MM-DD, h:mm:ss a");
 
       // Utilizar el método fromNow para mostrar la fecha en formato relativo
@@ -245,11 +244,25 @@ btnTransfer.addEventListener("click", function (e) {
     const second = now.getSeconds();
     senderUsername.movements.push({
       //date: new Date().toISOString().split("T")[0],
-      date : now.toISOString().slice(0, 10) + ' ' + hour + ':' + minute + ':' + second,
+      date:
+        now.toISOString().slice(0, 10) +
+        " " +
+        hour +
+        ":" +
+        minute +
+        ":" +
+        second,
       value: -amount,
     });
     receiverUsername.movements.push({
-      date:  now.toISOString().slice(0, 10) + ' ' + hour + ':' + minute + ':' + second,
+      date:
+        now.toISOString().slice(0, 10) +
+        " " +
+        hour +
+        ":" +
+        minute +
+        ":" +
+        second,
       value: amount,
     });
 
@@ -269,13 +282,20 @@ btnLoan.addEventListener("click", function (e) {
   console.log(amount);
   console.log(balance);
   const now = new Date();
-    const hour = now.getHours();
-    const minute = now.getMinutes();
-    const second = now.getSeconds();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const second = now.getSeconds();
   if (amount > 0) {
     console.log(currentAccount.movements);
     currentAccount.movements.push({
-      date:  now.toISOString().slice(0, 10) + ' ' + hour + ':' + minute + ':' + second,
+      date:
+        now.toISOString().slice(0, 10) +
+        " " +
+        hour +
+        ":" +
+        minute +
+        ":" +
+        second,
       value: amount,
     });
     balance += amount;
@@ -328,3 +348,36 @@ closeBtn.addEventListener("click", function (e) {
   e.preventDefault();
   closeAccount();
 });
+
+//Crear movimientos (faker.js)
+
+function generateMovements(numMovements) {
+  const movements = [];
+
+  for (let i = 0; i < numMovements; i++) {
+    const date = faker.date.past().toISOString().slice(0, 10);
+    const value = parseFloat(faker.finance.amount(-5000, 5000, 2));
+    movements.push({ date, value });
+  }
+
+  return movements;
+}
+
+console.log("movimientos aleatorios ini");
+const newMovements = generateMovements(10); // Generar 10 movimientos aleatorios
+console.log(newMovements);
+console.log("movimientos aleatorios fin");
+
+function updateAllUI() {
+  for (let account of accounts) {
+    updateUI(account);
+  }
+}
+
+const accountsToUpdate = [account1, account2, account3, account4];
+
+for (let account of accountsToUpdate) {
+  account.movements = [...account.movements, ...newMovements]; // Agregar nuevos movimientos a la cuenta existente
+}
+
+updateAllUI(); // Actualizar la interfaz de usuario para todas las cuentas
