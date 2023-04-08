@@ -349,35 +349,27 @@ closeBtn.addEventListener("click", function (e) {
   closeAccount();
 });
 
-//Crear movimientos (faker.js)
-
-function generateMovements(numMovements) {
-  const movements = [];
-
-  for (let i = 0; i < numMovements; i++) {
-    const date = faker.date.past().toISOString().slice(0, 10);
-    const value = parseFloat(faker.finance.amount(-5000, 5000, 2));
-    movements.push({ date, value });
-  }
-
-  return movements;
+//Peticion AJAX
+function updateData(data) {
+  accounts = data.accounts;
+  account1 = accounts[0];
+  account2 = accounts[1];
+  account3 = accounts[2];
+  account4 = accounts[3];
+  updateAllUI();
 }
 
-console.log("movimientos aleatorios ini");
-const newMovements = generateMovements(10); // Generar 10 movimientos aleatorios
-console.log(newMovements);
-console.log("movimientos aleatorios fin");
+//Ejecutar el servidor con este comando-> http-server --cors='*' <-
 
-function updateAllUI() {
-  for (let account of accounts) {
-    updateUI(account);
-  }
-}
-
-const accountsToUpdate = [account1, account2, account3, account4];
-
-for (let account of accountsToUpdate) {
-  account.movements = [...account.movements, ...newMovements]; // Agregar nuevos movimientos a la cuenta existente
-}
-
-updateAllUI(); // Actualizar la interfaz de usuario para todas las cuentas
+fetch("http://localhost:8080/movements.js")
+  .then((response) => response.text())
+  .then((module) => {
+    const movements = eval(module).getMovements(10);
+    return movements;
+  })
+  .then((data) => {
+    updateData({
+      accounts: [account1, account2, account3, account4, data],
+    });
+  })
+  .catch((error) => console.error(error));
